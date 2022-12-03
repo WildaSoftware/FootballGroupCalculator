@@ -1,0 +1,110 @@
+[
+	{
+		"teamA": {
+			"symbol": "ARG",
+			"goals": 1,
+			"yellowCards": 0,
+			"doubleYellowCards": 0,
+			"directRedCards": 0,
+			"directYellowAndRedCards": 0
+		},
+		"teamB": {
+			"symbol": "SA",
+			"goals": 2,
+			"yellowCards": 6,
+			"doubleYellowCards": 0,
+			"directRedCards": 0,
+			"directYellowAndRedCards": 0
+		}
+	},
+	{
+		"teamA": {
+			"symbol": "MEX",
+			"goals": 0,
+			"yellowCards": 2,
+			"doubleYellowCards": 0,
+			"directRedCards": 0,
+			"directYellowAndRedCards": 0
+		},
+		"teamB": {
+			"symbol": "POL",
+			"goals": 0,
+			"yellowCards": 1,
+			"doubleYellowCards": 0,
+			"directRedCards": 0,
+			"directYellowAndRedCards": 0
+		}
+	},
+	{
+		"teamA": {
+			"symbol": "POL",
+			"goals": 2,
+			"yellowCards": 3,
+			"doubleYellowCards": 0,
+			"directRedCards": 0,
+			"directYellowAndRedCards": 0
+		},
+		"teamB": {
+			"symbol": "SA",
+			"goals": 0,
+			"yellowCards": 2,
+			"doubleYellowCards": 0,
+			"directRedCards": 0,
+			"directYellowAndRedCards": 0
+		}
+	},
+	{
+		"teamA": {
+			"symbol": "ARG",
+			"goals": 2,
+			"yellowCards": 1,
+			"doubleYellowCards": 0,
+			"directRedCards": 0,
+			"directYellowAndRedCards": 0
+		},
+		"teamB": {
+			"symbol": "MEX",
+			"goals": 0,
+			"yellowCards": 4,
+			"doubleYellowCards": 0,
+			"directRedCards": 0,
+			"directYellowAndRedCards": 0
+		}
+	},
+	{
+		"teamA": {
+			"symbol": "SA",
+			"goals": 1,
+			"yellowCards": 6,
+			"doubleYellowCards": 0,
+			"directRedCards": 0,
+			"directYellowAndRedCards": 0
+		},
+		"teamB": {
+			"symbol": "MEX",
+			"goals": 2,
+			"yellowCards": 1,
+			"doubleYellowCards": 0,
+			"directRedCards": 0,
+			"directYellowAndRedCards": 0
+		}
+	},
+	{
+		"teamA": {
+			"symbol": "POL",
+			"goals": 0,
+			"yellowCards": 1,
+			"doubleYellowCards": 0,
+			"directRedCards": 0,
+			"directYellowAndRedCards": 0
+		},
+		"teamB": {
+			"symbol": "ARG",
+			"goals": 2,
+			"yellowCards": 1,
+			"doubleYellowCards": 0,
+			"directRedCards": 0,
+			"directYellowAndRedCards": 0
+		}
+	}
+]
