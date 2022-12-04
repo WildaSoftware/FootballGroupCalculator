@@ -1,14 +1,95 @@
 <?php
 require_once('Team.php');
+require_once('Group.php');
 
 class TeamTable {
 
     private $teamSymbols = [];
     private $teams = [];
+    private $group;
 
-    public function __construct(array $teamSymbols = [], array $teams = []) {
+    public function __construct(Group $group, array $teamSymbols = [], array $teams = []) {
         $this->teamSymbols = $teamSymbols;
         $this->teams = $teams;
+        $this->group = $group;
+    }
+
+    public function sumResults($restrictedTeamSymbols = []) {
+        foreach($this->group->getMatches() as $match) {
+            $teamA = $match->getTeamA();
+            $teamB = $match->getTeamB();
+
+            $a = $teamA->symbol;
+            $b = $teamB->symbol;
+
+            if(!empty($restrictedTeamSymbols) && !empty(array_diff([$a, $b], $restrictedTeamSymbols))) {
+                continue;
+            }
+            
+            if(!in_array($a, $this->teamSymbols)) {
+                $this->teamSymbols[] = $a;
+                $this->teams[] = new Team($a);
+            }
+            if(!in_array($b, $this->teamSymbols)) {
+                $this->teamSymbols[] = $b;
+                $this->teams[] = new Team($b);
+            }
+
+            $this->getTeamBySymbol($a)->addMatchResult($teamA, $teamB);
+            $this->getTeamBySymbol($b)->addMatchResult($teamB, $teamA);
+        }
+    }
+
+    public function calculateOrder(bool $verifyFairPlay = false) {
+        $smallTables = [];
+
+        for($i = 0; $i < count($this->teams) - 1; ++$i) {
+            for($j = $i + 1; $j < count($this->teams); ++$j) {
+                if($i == $j) continue;
+                
+                $team1 = $this->teams[$i];
+                $team2 = $this->teams[$j];
+                
+                if($team2->points > $team1->points) {
+                    $this->swapOrder($i, $j);
+                }
+                elseif($team2->points == $team1->points) {
+                    if($team2->goalsBalance > $team1->goalsBalance) {
+                        $this->swapOrder($i, $j);
+                    }
+                    elseif($team2->goalsBalance == $team1->goalsBalance) {
+                        if($team2->scoredGoals > $team1->scoredGoals) {
+                            $this->swapOrder($i, $j);
+                        }
+                        elseif($team2->scoredGoals == $team1->scoredGoals) {
+                            if($verifyFairPlay) {
+                                if($this->group->getTeamFairPlayResultBySymbol($team2->symbol) > $this->group->getTeamFairPlayResultBySymbol($team1->symbol)) {
+                                    $this->swapOrder($i, $j);
+                                }
+                            }
+                            else {
+                                $hash = md5($team2->points.$team2->goalsBalance.$team2->scoredGoals);
+                                if(!array_key_exists($hash, $smallTables)) {
+                                    $smallTables[$hash] = new TeamTable($this->group);
+                                }
+                                
+                                $smallTables[$hash]->addTeam($team1);
+                                $smallTables[$hash]->addTeam($team2);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        if(!empty($smallTables)) {
+            foreach($smallTables as $hash => $smallTable) {
+                $smallTable->sumResults($smallTable->getTeamSymbols());
+                $smallTable->calculateOrder(true);
+                
+                $this->reorderPartByTable($smallTable);
+            }
+        }
     }
 
     public function addTeam(Team $team) {
@@ -56,7 +137,9 @@ class TeamTable {
     public function print() {
         $i = 1;
         foreach($this->teams as $team) {
-            echo ($i++).". $team->symbol - $team->points pkt., $team->scoredGoals-$team->concededGoals ($team->fairPlay)\n";
+            $fairPlayResult = $this->group->getTeamFairPlayResultBySymbol($team->symbol);
+
+            echo ($i++).". $team->symbol - $team->points pkt., $team->scoredGoals-$team->concededGoals ($fairPlayResult)\n";
         }
     }
 

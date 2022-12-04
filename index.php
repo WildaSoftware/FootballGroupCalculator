@@ -7,8 +7,8 @@ try {
     }
 
     $group = new Group($argv[1]);
-    $teamTable = $group->sumResults();
-    $teamTable = $group->calculateOrder($teamTable);
+    $teamTable = $group->prepareTeams();
+    $teamTable->calculateOrder();
     $teamTable->print();
 }
 catch(Exception $e) {
