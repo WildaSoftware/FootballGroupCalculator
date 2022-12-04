@@ -95,12 +95,9 @@ class Group {
             foreach($smallTables as $hash => $smallTable) {
                 $restrictedTable = $this->sumResults($smallTable->getTeamSymbols());
                 $orderedSmallTable = $this->calculateOrder($restrictedTable, true);
-                $smallTables[$hash]->reorderBySymbols($orderedSmallTable->getTeamSymbols());
+                
+                $table->reorderPartByTable($orderedSmallTable);
             }
-        }
-
-        foreach($smallTables as $smallTable) {
-            $table->reorderPartByTable($smallTable);
         }
 
         return $table;

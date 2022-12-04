@@ -39,17 +39,6 @@ class TeamTable {
         list($this->teams[$i], $this->teams[$j]) = [$this->teams[$j], $this->teams[$i]];
     }
 
-    public function reorderBySymbols(array $symbols) {
-        $this->teamSymbols = $symbols;
-        $newTeams = [];
-
-        foreach($symbols as $symbol) {
-            $newTeams[] = $this->getTeamBySymbol($symbol);
-        }
-
-        $this->teams = $newTeams;
-    }
-
     public function reorderPartByTable(TeamTable $table) {
         $newTeamSymbols = [];
         foreach($this->teamSymbols as $symbol) {
@@ -62,5 +51,16 @@ class TeamTable {
         }
 
         $this->reorderBySymbols(array_values(array_unique($newTeamSymbols)));
+    }
+
+    private function reorderBySymbols(array $symbols) {
+        $this->teamSymbols = $symbols;
+        $newTeams = [];
+
+        foreach($symbols as $symbol) {
+            $newTeams[] = $this->getTeamBySymbol($symbol);
+        }
+
+        $this->teams = $newTeams;
     }
 }
