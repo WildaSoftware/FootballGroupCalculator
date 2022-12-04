@@ -53,6 +53,13 @@ class TeamTable {
         $this->reorderBySymbols(array_values(array_unique($newTeamSymbols)));
     }
 
+    public function print() {
+        $i = 1;
+        foreach($this->teams as $team) {
+            echo ($i++).". $team->symbol - $team->points pkt., $team->scoredGoals-$team->concededGoals ($team->fairPlay)\n";
+        }
+    }
+
     private function reorderBySymbols(array $symbols) {
         $this->teamSymbols = $symbols;
         $newTeams = [];

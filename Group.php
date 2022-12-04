@@ -102,12 +102,4 @@ class Group {
 
         return $table;
     }
-
-    public function printResults(TeamTable $teamTable) {
-        $i = 1;
-        foreach($teamTable->getTeamSymbols() as $symbol) {
-            $team = $teamTable->getTeamBySymbol($symbol);
-            echo ($i++).". $team->symbol - $team->points pkt., $team->scoredGoals-$team->concededGoals ($team->fairPlay)\n";
-        }
-    }
 }

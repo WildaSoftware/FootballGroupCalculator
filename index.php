@@ -9,7 +9,7 @@ try {
     $group = new Group($argv[1]);
     $teamTable = $group->sumResults();
     $teamTable = $group->calculateOrder($teamTable);
-    $group->printResults($teamTable);
+    $teamTable->print();
 }
 catch(Exception $e) {
     echo $e->getMessage()."\n";
