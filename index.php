@@ -8,8 +8,8 @@ try {
 
     $group = new Group($argv[1]);
     $teamTable = $group->sumResults();
-    $order = $group->calculateOrder($teamTable);
-    $group->printResults($teamTable, $order);
+    $teamTable = $group->calculateOrder($teamTable);
+    $group->printResults($teamTable);
 }
 catch(Exception $e) {
     echo $e->getMessage()."\n";

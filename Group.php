@@ -94,46 +94,21 @@ class Group {
         if(!empty($smallTables)) {
             foreach($smallTables as $hash => $smallTable) {
                 $restrictedTable = $this->sumResults($smallTable->getTeamSymbols());
-                $orderedSmallTableSymbols = $this->calculateOrder($restrictedTable, true);
-                $smallTables[$hash]->reorderBySymbols($orderedSmallTableSymbols);
+                $orderedSmallTable = $this->calculateOrder($restrictedTable, true);
+                $smallTables[$hash]->reorderBySymbols($orderedSmallTable->getTeamSymbols());
             }
         }
-        
-        $result = [];
-        $visitedSymbols = [];
-        $teams = $table->getTeams();
 
-        for($i = 0; $i < count($teams); ++$i) {
-            if(in_array($teams[$i]->symbol, $visitedSymbols)) continue;
-            
-            $smallTableIncludingThisTeam = null;
-            foreach($smallTables as $smallTable) {
-                if(in_array($teams[$i]->symbol, $smallTable->getTeamSymbols())) {
-                    $smallTableIncludingThisTeam = $smallTable;
-                    break;
-                }
-            }
-            
-            if(!empty($smallTableIncludingThisTeam)) {
-                foreach($smallTableIncludingThisTeam->getTeamSymbols() as $symbol) {
-                    if(in_array($symbol, $visitedSymbols)) continue;
-                    
-                    $result[] = $symbol;
-                    $visitedSymbols[] = $symbol;
-                }
-            }
-            else {
-                $result[] = $teams[$i]->symbol;
-                $visitedTeams[] = $teams[$i]->symbols;
-            }
+        foreach($smallTables as $smallTable) {
+            $table->reorderPartByTable($smallTable);
         }
-        
-        return $result;
+
+        return $table;
     }
 
-    public function printResults($teamTable, $order) {
+    public function printResults(TeamTable $teamTable) {
         $i = 1;
-        foreach($order as $symbol) {
+        foreach($teamTable->getTeamSymbols() as $symbol) {
             $team = $teamTable->getTeamBySymbol($symbol);
             echo ($i++).". $team->symbol - $team->points pkt., $team->scoredGoals-$team->concededGoals ($team->fairPlay)\n";
         }

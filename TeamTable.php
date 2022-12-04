@@ -25,8 +25,8 @@ class TeamTable {
     }
 
     public function getTeamBySymbol(string $symbol): Team {
-        for($i = 0; $i < count($this->teamSymbols); ++$i) {
-            if($this->teamSymbols[$i] == $symbol) {
+        for($i = 0; $i < count($this->teams); ++$i) {
+            if($this->teams[$i]->symbol == $symbol) {
                 return $this->teams[$i];
             }
         }
@@ -47,6 +47,20 @@ class TeamTable {
             $newTeams[] = $this->getTeamBySymbol($symbol);
         }
 
-        $this->teams[] = $newTeams;
+        $this->teams = $newTeams;
+    }
+
+    public function reorderPartByTable(TeamTable $table) {
+        $newTeamSymbols = [];
+        foreach($this->teamSymbols as $symbol) {
+            if(in_array($symbol, $table->getTeamSymbols())) {
+                $newTeamSymbols = array_merge($newTeamSymbols, $table->getTeamSymbols());
+            }
+            else {
+                $newTeamSymbols[] = $symbol;
+            }
+        }
+
+        $this->reorderBySymbols(array_values(array_unique($newTeamSymbols)));
     }
 }
