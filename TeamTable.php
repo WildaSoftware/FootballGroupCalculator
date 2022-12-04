@@ -53,35 +53,19 @@ class TeamTable {
                 $team1 = $this->teams[$i];
                 $team2 = $this->teams[$j];
                 $comparator = new TeamComparator($this);
-                
-                if($comparator->comparePoints($team1, $team2) > 0) {
+
+                $compareResult = $comparator->compare($team1, $team2);
+                if($compareResult > 0) {
                     $this->swapOrder($i, $j);
                 }
-                elseif($comparator->comparePoints($team1, $team2) == 0) {
-                    if($comparator->compareGoalsBalance($team1, $team2) > 0) {
-                        $this->swapOrder($i, $j);
+                elseif($compareResult == 0) {
+                    $hash = md5($team2->points.$team2->goalsBalance.$team2->scoredGoals);
+                    if(!array_key_exists($hash, $smallTables)) {
+                        $smallTables[$hash] = new TeamTable($this->group, $this);
                     }
-                    elseif($comparator->compareGoalsBalance($team1, $team2) == 0) {
-                        if($comparator->compareScoredGoals($team1, $team2) > 0) {
-                            $this->swapOrder($i, $j);
-                        }
-                        elseif($comparator->compareScoredGoals($team1, $team2) == 0) {
-                            if(!empty($this->parentTable)) {
-                                if($comparator->compareFairPlayResults($team1, $team2) > 0) {
-                                    $this->swapOrder($i, $j);
-                                }
-                            }
-                            else {
-                                $hash = md5($team2->points.$team2->goalsBalance.$team2->scoredGoals);
-                                if(!array_key_exists($hash, $smallTables)) {
-                                    $smallTables[$hash] = new TeamTable($this->group, $this);
-                                }
-                                
-                                $smallTables[$hash]->addTeam($team1);
-                                $smallTables[$hash]->addTeam($team2);
-                            }
-                        }
-                    }
+                    
+                    $smallTables[$hash]->addTeam($team1);
+                    $smallTables[$hash]->addTeam($team2);
                 }
             }
         }
@@ -149,6 +133,10 @@ class TeamTable {
 
     public function getGroup() {
         return $this->group;
+    }
+
+    public function getParentTable() {
+        return $this->parentTable;
     }
 
     private function reorderBySymbols(array $symbols) {
