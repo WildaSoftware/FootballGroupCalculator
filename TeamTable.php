@@ -1,6 +1,7 @@
 <?php
 require_once('Team.php');
 require_once('Group.php');
+require_once('TeamComparator.php');
 
 class TeamTable {
 
@@ -51,21 +52,22 @@ class TeamTable {
                 
                 $team1 = $this->teams[$i];
                 $team2 = $this->teams[$j];
+                $comparator = new TeamComparator($this);
                 
-                if($team2->points > $team1->points) {
+                if($comparator->comparePoints($team1, $team2) > 0) {
                     $this->swapOrder($i, $j);
                 }
-                elseif($team2->points == $team1->points) {
-                    if($team2->goalsBalance > $team1->goalsBalance) {
+                elseif($comparator->comparePoints($team1, $team2) == 0) {
+                    if($comparator->compareGoalsBalance($team1, $team2) > 0) {
                         $this->swapOrder($i, $j);
                     }
-                    elseif($team2->goalsBalance == $team1->goalsBalance) {
-                        if($team2->scoredGoals > $team1->scoredGoals) {
+                    elseif($comparator->compareGoalsBalance($team1, $team2) == 0) {
+                        if($comparator->compareScoredGoals($team1, $team2) > 0) {
                             $this->swapOrder($i, $j);
                         }
-                        elseif($team2->scoredGoals == $team1->scoredGoals) {
+                        elseif($comparator->compareScoredGoals($team1, $team2) == 0) {
                             if(!empty($this->parentTable)) {
-                                if($this->group->getTeamFairPlayResultBySymbol($team2->symbol) > $this->group->getTeamFairPlayResultBySymbol($team1->symbol)) {
+                                if($comparator->compareFairPlayResults($team1, $team2) > 0) {
                                     $this->swapOrder($i, $j);
                                 }
                             }
@@ -143,6 +145,10 @@ class TeamTable {
 
             echo ($i++).". $team->symbol - $team->points pkt., $team->scoredGoals-$team->concededGoals ($fairPlayResult)\n";
         }
+    }
+
+    public function getGroup() {
+        return $this->group;
     }
 
     private function reorderBySymbols(array $symbols) {
