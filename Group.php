@@ -1,5 +1,6 @@
 <?php
 require_once('Team.php');
+require_once('MatchDTO.php');
 
 class Group {
 
@@ -9,44 +10,49 @@ class Group {
         $this->matches = json_decode(file_get_contents($matchesFile), true);
     }
 
-    public function sumResults($obligatorySymbols = []) {
+    public function sumResults($restrictedTeamSymbols = []) {
         $teams = [];
         foreach($this->matches as $match) {
-            $a = $match['teamA'];
-            $b = $match['teamB'];
-    
-            if(!empty($obligatorySymbols) && (!in_array($a['symbol'], $obligatorySymbols) || !in_array($b['symbol'], $obligatorySymbols))) {
+            $matchDto = new MatchDTO($match);
+
+            $teamA = $matchDto->getTeamA();
+            $teamB = $matchDto->getTeamB();
+
+            $a = $teamA->symbol;
+            $b = $teamB->symbol;
+
+            if(!empty($restrictedTeamSymbols) && !empty(array_diff([$a, $b], $restrictedTeamSymbols))) {
                 continue;
             }
             
-            if(!array_key_exists($a['symbol'], $teams)) {
-                $teams[$a['symbol']] = new Team($a['symbol']);
+            if(!array_key_exists($a, $teams)) {
+                $teams[$a] = new Team($a);
             }
-            if(!array_key_exists($b['symbol'], $teams)) {
-                $teams[$b['symbol']] = new Team($b['symbol']);
+            if(!array_key_exists($b, $teams)) {
+                $teams[$b] = new Team($b);
             }
             
-            if($a['goals'] > $b['goals']) {
-                $teams[$a['symbol']]->points += 3;
+            if($teamA->goals > $teamB->goals) {
+                $teams[$a]->points += 3;
             }
-            elseif($a['goals'] == $b['goals']) {
-                $teams[$a['symbol']]->points++;
-                $teams[$b['symbol']]->points++;
+            elseif($teamA->goals == $teamB->goals) {
+                $teams[$a]->points++;
+                $teams[$b]->points++;
             }
             else {
-                $teams[$b['symbol']]->points += 3;
+                $teams[$b]->points += 3;
             }
             
-            $teams[$a['symbol']]->scoredGoals += $a['goals'];
-            $teams[$a['symbol']]->concededGoals += $b['goals'];
-            $teams[$b['symbol']]->scoredGoals += $b['goals'];
-            $teams[$b['symbol']]->concededGoals += $a['goals'];
+            $teams[$a]->scoredGoals += $teamA->goals;
+            $teams[$a]->concededGoals += $teamB->goals;
+            $teams[$b]->scoredGoals += $teamB->goals;
+            $teams[$b]->concededGoals += $teamA->goals;
             
-            $teams[$a['symbol']]->goalsBalance = $teams[$a['symbol']]->scoredGoals - $teams[$a['symbol']]->concededGoals;
-            $teams[$b['symbol']]->goalsBalance = $teams[$b['symbol']]->scoredGoals - $teams[$b['symbol']]->concededGoals;
+            $teams[$a]->goalsBalance = $teams[$a]->scoredGoals - $teams[$a]->concededGoals;
+            $teams[$b]->goalsBalance = $teams[$b]->scoredGoals - $teams[$b]->concededGoals;
             
-            $teams[$a['symbol']]->fairPlay += ($a['yellowCards'] * -1) + ($a['doubleYellowCards'] * -3) + ($a['directRedCards'] * -4) + ($a['directYellowAndRedCards'] * -5);
-            $teams[$b['symbol']]->fairPlay += ($b['yellowCards'] * -1) + ($b['doubleYellowCards'] * -3) + ($b['directRedCards'] * -4) + ($b['directYellowAndRedCards'] * -5);
+            $teams[$a]->fairPlay += $teamA->calculateFairPlay();
+            $teams[$b]->fairPlay += $teamB->calculateFairPlay();
         }
     
         return $teams;
