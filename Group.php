@@ -29,8 +29,6 @@ class Group {
         foreach($table->getTeams() as $team) {
             $this->teamFairPlayResults[$team->symbol] = $team->fairPlay;
         }
-        
-        echo print_r($this->teamFairPlayResults, true);
 
         return $table;
     }

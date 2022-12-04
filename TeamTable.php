@@ -7,11 +7,11 @@ class TeamTable {
     private $teamSymbols = [];
     private $teams = [];
     private $group;
+    private $parentTable = null;
 
-    public function __construct(Group $group, array $teamSymbols = [], array $teams = []) {
-        $this->teamSymbols = $teamSymbols;
-        $this->teams = $teams;
+    public function __construct(Group $group, TeamTable $parentTable = null) {
         $this->group = $group;
+        $this->parentTable = $parentTable;
     }
 
     public function sumResults($restrictedTeamSymbols = []) {
@@ -40,12 +40,14 @@ class TeamTable {
         }
     }
 
-    public function calculateOrder(bool $verifyFairPlay = false) {
+    public function calculateOrder() {
         $smallTables = [];
 
         for($i = 0; $i < count($this->teams) - 1; ++$i) {
             for($j = $i + 1; $j < count($this->teams); ++$j) {
-                if($i == $j) continue;
+                if($i == $j) {
+                    continue;
+                }
                 
                 $team1 = $this->teams[$i];
                 $team2 = $this->teams[$j];
@@ -62,7 +64,7 @@ class TeamTable {
                             $this->swapOrder($i, $j);
                         }
                         elseif($team2->scoredGoals == $team1->scoredGoals) {
-                            if($verifyFairPlay) {
+                            if(!empty($this->parentTable)) {
                                 if($this->group->getTeamFairPlayResultBySymbol($team2->symbol) > $this->group->getTeamFairPlayResultBySymbol($team1->symbol)) {
                                     $this->swapOrder($i, $j);
                                 }
@@ -70,7 +72,7 @@ class TeamTable {
                             else {
                                 $hash = md5($team2->points.$team2->goalsBalance.$team2->scoredGoals);
                                 if(!array_key_exists($hash, $smallTables)) {
-                                    $smallTables[$hash] = new TeamTable($this->group);
+                                    $smallTables[$hash] = new TeamTable($this->group, $this);
                                 }
                                 
                                 $smallTables[$hash]->addTeam($team1);
@@ -85,7 +87,7 @@ class TeamTable {
         if(!empty($smallTables)) {
             foreach($smallTables as $hash => $smallTable) {
                 $smallTable->sumResults($smallTable->getTeamSymbols());
-                $smallTable->calculateOrder(true);
+                $smallTable->calculateOrder();
                 
                 $this->reorderPartByTable($smallTable);
             }
