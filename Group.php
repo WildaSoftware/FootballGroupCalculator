@@ -6,6 +6,7 @@ require_once('TeamTable.php');
 class Group {
 
     private $matches;
+    private $teamFairPlayResults;
 
     public function __construct(string $matchesFile) {
         if(!file_exists($matchesFile)) {
@@ -18,6 +19,7 @@ class Group {
         }
 
         $this->matches = json_decode($fileContent, true);
+        $this->teamFairPlayResults = [];
     }
 
     public function sumResults($restrictedTeamSymbols = []): TeamTable {
@@ -44,6 +46,12 @@ class Group {
 
             $teams[$a]->addMatchResult($teamA, $teamB);
             $teams[$b]->addMatchResult($teamB, $teamA);
+        }
+
+        if(empty($restrictedTeamSymbols)) {
+            foreach($teams as $symbol => $team) {
+                $this->teamFairPlayResults[$symbol] = $team->fairPlay;
+            }
         }
     
         return new TeamTable(array_keys($teams), array_values($teams));
@@ -72,7 +80,7 @@ class Group {
                         }
                         elseif($team2->scoredGoals == $team1->scoredGoals) {
                             if($verifyFairPlay) {
-                                if($team2->fairPlay > $team1->fairPlay) {
+                                if($this->teamFairPlayResults[$team2->symbol] > $this->teamFairPlayResults[$team1->symbol]) {
                                     $table->swapOrder($i, $j);
                                 }
                             }
