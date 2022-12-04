@@ -1,6 +1,7 @@
 <?php
 require_once('Team.php');
 require_once('MatchDTO.php');
+require_once('TeamTable.php');
 
 class Group {
 
@@ -19,7 +20,7 @@ class Group {
         $this->matches = json_decode($fileContent, true);
     }
 
-    public function sumResults($restrictedTeamSymbols = []) {
+    public function sumResults($restrictedTeamSymbols = []): TeamTable {
         $teams = [];
         foreach($this->matches as $match) {
             $matchDto = new MatchDTO($match);
@@ -45,45 +46,44 @@ class Group {
             $teams[$b]->addMatchResult($teamB, $teamA);
         }
     
-        return $teams;
+        return new TeamTable(array_keys($teams), array_values($teams));
     }
     
-    public function calculateOrder($teams, $verifyFairPlay = false) {
-        $order = array_keys($teams);
+    public function calculateOrder(TeamTable $table, bool $verifyFairPlay = false) {
         $smallTables = [];
-    
-        for($i = 0; $i < count($order) - 1; ++$i) {
-            for($j = $i + 1; $j < count($order); ++$j) {
+
+        for($i = 0; $i < count($table->getTeams()) - 1; ++$i) {
+            for($j = $i + 1; $j < count($table->getTeams()); ++$j) {
                 if($i == $j) continue;
                 
-                $team1 = $teams[$order[$i]];
-                $team2 = $teams[$order[$j]];
+                $team1 = $table->getTeams()[$i];
+                $team2 = $table->getTeams()[$j];
                 
                 if($team2->points > $team1->points) {
-                    $this->swapOrder($order, $i, $j);
+                    $table->swapOrder($i, $j);
                 }
                 elseif($team2->points == $team1->points) {
                     if($team2->goalsBalance > $team1->goalsBalance) {
-                        $this->swapOrder($order, $i, $j);
+                        $table->swapOrder($i, $j);
                     }
                     elseif($team2->goalsBalance == $team1->goalsBalance) {
                         if($team2->scoredGoals > $team1->scoredGoals) {
-                            $this->swapOrder($order, $i, $j);
+                            $table->swapOrder($i, $j);
                         }
                         elseif($team2->scoredGoals == $team1->scoredGoals) {
                             if($verifyFairPlay) {
                                 if($team2->fairPlay > $team1->fairPlay) {
-                                    $this->swapOrder($order, $i, $j);
+                                    $table->swapOrder($i, $j);
                                 }
                             }
                             else {
                                 $hash = md5($team2->points.$team2->goalsBalance.$team2->scoredGoals);
                                 if(!array_key_exists($hash, $smallTables)) {
-                                    $smallTables[$hash] = [];
+                                    $smallTables[$hash] = new TeamTable();
                                 }
                                 
-                                $smallTables[$hash][] = $team1->symbol;
-                                $smallTables[$hash][] = $team2->symbol;
+                                $smallTables[$hash]->addTeam($team1);
+                                $smallTables[$hash]->addTeam($team2);
                             }
                         }
                     }
@@ -92,52 +92,50 @@ class Group {
         }
         
         if(!empty($smallTables)) {
-            foreach($smallTables as $hash => $table) {
-                $subTeams = $this->sumResults($table);
-                $newOrder = $this->calculateOrder($subTeams, true);
-                $smallTables[$hash] = $newOrder;
+            foreach($smallTables as $hash => $smallTable) {
+                $restrictedTable = $this->sumResults($smallTable->getTeamSymbols());
+                $orderedSmallTableSymbols = $this->calculateOrder($restrictedTable, true);
+                $smallTables[$hash]->reorderBySymbols($orderedSmallTableSymbols);
             }
         }
         
         $result = [];
-        $visitedTeams = [];
-        for($i = 0; $i < count($order); ++$i) {
-            if(in_array($order[$i], $visitedTeams)) continue;
+        $visitedSymbols = [];
+        $teams = $table->getTeams();
+
+        for($i = 0; $i < count($teams); ++$i) {
+            if(in_array($teams[$i]->symbol, $visitedSymbols)) continue;
             
             $smallTableIncludingThisTeam = null;
             foreach($smallTables as $smallTable) {
-                if(in_array($order[$i], $smallTable)) {
+                if(in_array($teams[$i]->symbol, $smallTable->getTeamSymbols())) {
                     $smallTableIncludingThisTeam = $smallTable;
                     break;
                 }
             }
             
             if(!empty($smallTableIncludingThisTeam)) {
-                foreach($smallTableIncludingThisTeam as $team) {
-                    if(in_array($team, $visitedTeams)) continue;
+                foreach($smallTableIncludingThisTeam->getTeamSymbols() as $symbol) {
+                    if(in_array($symbol, $visitedSymbols)) continue;
                     
-                    $result[] = $team;
-                    $visitedTeams[] = $team;
+                    $result[] = $symbol;
+                    $visitedSymbols[] = $symbol;
                 }
             }
             else {
-                $result[] = $order[$i];
-                $visitedTeams[] = $order[$i];
+                $result[] = $teams[$i]->symbol;
+                $visitedTeams[] = $teams[$i]->symbols;
             }
         }
         
         return $result;
     }
 
-    public function printResults($teams, $order) {
+    public function printResults($teamTable, $order) {
         $i = 1;
-        foreach($order as $idx) {
-            $team = $teams[$idx];
+        foreach($order as $symbol) {
+            $team = $teamTable->getTeamBySymbol($symbol);
             echo ($i++).". $team->symbol - $team->points pkt., $team->scoredGoals-$team->concededGoals ($team->fairPlay)\n";
         }
-    }
-    
-    private function swapOrder(&$array, $i, $j) {
-        list($array[$i], $array[$j]) = [$array[$j], $array[$i]];
     }
 }

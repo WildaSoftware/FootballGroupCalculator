@@ -7,9 +7,9 @@ try {
     }
 
     $group = new Group($argv[1]);
-    $teams = $group->sumResults();
-    $order = $group->calculateOrder($teams);
-    $group->printResults($teams, $order);
+    $teamTable = $group->sumResults();
+    $order = $group->calculateOrder($teamTable);
+    $group->printResults($teamTable, $order);
 }
 catch(Exception $e) {
     echo $e->getMessage()."\n";
