@@ -93,35 +93,6 @@ class TeamTable {
         return $this->teams;
     }
 
-    public function getTeamBySymbol(string $symbol): Team {
-        for($i = 0; $i < count($this->teams); ++$i) {
-            if($this->teams[$i]->symbol == $symbol) {
-                return $this->teams[$i];
-            }
-        }
-
-        return null;
-    }
-
-    public function swapOrder($i, $j) {
-        list($this->teamSymbols[$i], $this->teamSymbols[$j]) = [$this->teamSymbols[$j], $this->teamSymbols[$i]];
-        list($this->teams[$i], $this->teams[$j]) = [$this->teams[$j], $this->teams[$i]];
-    }
-
-    public function reorderPartByTable(TeamTable $table) {
-        $newTeamSymbols = [];
-        foreach($this->teamSymbols as $symbol) {
-            if(in_array($symbol, $table->getTeamSymbols())) {
-                $newTeamSymbols = array_merge($newTeamSymbols, $table->getTeamSymbols());
-            }
-            else {
-                $newTeamSymbols[] = $symbol;
-            }
-        }
-
-        $this->reorderBySymbols(array_values(array_unique($newTeamSymbols)));
-    }
-
     public function print() {
         $i = 1;
         foreach($this->teams as $team) {
@@ -137,6 +108,35 @@ class TeamTable {
 
     public function getParentTable() {
         return $this->parentTable;
+    }
+
+    private function getTeamBySymbol(string $symbol): Team {
+        for($i = 0; $i < count($this->teams); ++$i) {
+            if($this->teams[$i]->symbol == $symbol) {
+                return $this->teams[$i];
+            }
+        }
+
+        return null;
+    }
+
+    private function swapOrder($i, $j) {
+        list($this->teamSymbols[$i], $this->teamSymbols[$j]) = [$this->teamSymbols[$j], $this->teamSymbols[$i]];
+        list($this->teams[$i], $this->teams[$j]) = [$this->teams[$j], $this->teams[$i]];
+    }
+
+    private function reorderPartByTable(TeamTable $table) {
+        $newTeamSymbols = [];
+        foreach($this->teamSymbols as $symbol) {
+            if(in_array($symbol, $table->getTeamSymbols())) {
+                $newTeamSymbols = array_merge($newTeamSymbols, $table->getTeamSymbols());
+            }
+            else {
+                $newTeamSymbols[] = $symbol;
+            }
+        }
+
+        $this->reorderBySymbols(array_values(array_unique($newTeamSymbols)));
     }
 
     private function reorderBySymbols(array $symbols) {
