@@ -1,5 +1,7 @@
 <?php
 
+require_once('MatchDTO.php');
+
 class Team {
 
     private $attributes = [];
@@ -18,5 +20,21 @@ class Team {
 
     public function __get($name) {
         return $this->attributes[$name] ?? null;
+    }
+
+    public function addMatchResult(TeamDTO $myTeam, TeamDto $opponent) {
+        if($myTeam->goals > $opponent->goals) {
+            $this->points += 3;
+        }
+        elseif($myTeam->goals == $opponent->goals) {
+            $this->points++;
+        }
+        
+        $this->scoredGoals += $myTeam->goals;
+        $this->concededGoals += $opponent->goals;
+        
+        $this->goalsBalance = $this->scoredGoals - $this->concededGoals;
+        
+        $this->fairPlay += $myTeam->calculateFairPlay();
     }
 }

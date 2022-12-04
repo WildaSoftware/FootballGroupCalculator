@@ -7,7 +7,16 @@ class Group {
     private $matches;
 
     public function __construct(string $matchesFile) {
-        $this->matches = json_decode(file_get_contents($matchesFile), true);
+        if(!file_exists($matchesFile)) {
+            throw new Exception("Provided matches files \"$matchesFile\" does not exist");
+        }
+
+        $fileContent = file_get_contents($matchesFile);
+        if(!$fileContent) {
+            throw new Exception("Provided matches files \"$matchesFile\" cannot be read");
+        }
+
+        $this->matches = json_decode($fileContent, true);
     }
 
     public function sumResults($restrictedTeamSymbols = []) {
@@ -31,28 +40,9 @@ class Group {
             if(!array_key_exists($b, $teams)) {
                 $teams[$b] = new Team($b);
             }
-            
-            if($teamA->goals > $teamB->goals) {
-                $teams[$a]->points += 3;
-            }
-            elseif($teamA->goals == $teamB->goals) {
-                $teams[$a]->points++;
-                $teams[$b]->points++;
-            }
-            else {
-                $teams[$b]->points += 3;
-            }
-            
-            $teams[$a]->scoredGoals += $teamA->goals;
-            $teams[$a]->concededGoals += $teamB->goals;
-            $teams[$b]->scoredGoals += $teamB->goals;
-            $teams[$b]->concededGoals += $teamA->goals;
-            
-            $teams[$a]->goalsBalance = $teams[$a]->scoredGoals - $teams[$a]->concededGoals;
-            $teams[$b]->goalsBalance = $teams[$b]->scoredGoals - $teams[$b]->concededGoals;
-            
-            $teams[$a]->fairPlay += $teamA->calculateFairPlay();
-            $teams[$b]->fairPlay += $teamB->calculateFairPlay();
+
+            $teams[$a]->addMatchResult($teamA, $teamB);
+            $teams[$b]->addMatchResult($teamB, $teamA);
         }
     
         return $teams;

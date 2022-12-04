@@ -1,11 +1,20 @@
 <?php
 require_once('Group.php');
 
-$group = new Group($argv[1]);
+try {
+    if(!isset($argv[1])) {
+        throw new Exception('No file has been provided');
+    }
 
-$teams = $group->sumResults();
-$order = $group->calculateOrder($teams);
-$group->printResults($teams, $order);
+    $group = new Group($argv[1]);
+    $teams = $group->sumResults();
+    $order = $group->calculateOrder($teams);
+    $group->printResults($teams, $order);
+}
+catch(Exception $e) {
+    echo $e->getMessage()."\n";
+    echo $e->getTraceAsString()."\n";
+}
 
 
 
