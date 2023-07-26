@@ -3,41 +3,47 @@ require_once('Team.php');
 require_once('MatchDTO.php');
 require_once('TeamTable.php');
 
-class Group {
+class Group
+{
 
-    private $matches;
-    private $teamFairPlayResults;
+    private $matches = [];
+    private $teamFairPlayResults = [];
 
-    public function __construct(string $matchesFile) {
-        if(!file_exists($matchesFile)) {
+    public function __construct(string $matchesFile)
+    {
+        if (!file_exists($matchesFile)) {
             throw new Exception("Provided matches files \"$matchesFile\" does not exist");
         }
 
         $fileContent = file_get_contents($matchesFile);
-        if(!$fileContent) {
+        if (!$fileContent) {
             throw new Exception("Provided matches files \"$matchesFile\" cannot be read");
         }
 
-        $this->matches = array_map(function($match) { return new MatchDTO($match); }, json_decode($fileContent, true));
-        $this->teamFairPlayResults = [];
+        $this->matches = array_map(function ($match) {
+            return new MatchDTO($match);
+        }, json_decode($fileContent, true));
     }
 
-    public function prepareTeams() {
+    public function prepareTeams(): TeamTable
+    {
         $table = new TeamTable($this);
-        $table->sumResults();
+        $table->sumResults([]);
 
-        foreach($table->getTeams() as $team) {
+        foreach ($table->getTeams() as $team) {
             $this->teamFairPlayResults[$team->symbol] = $team->fairPlay;
         }
 
         return $table;
     }
-    
-    public function getMatches() {
+
+    public function getMatches(): array
+    {
         return $this->matches;
     }
 
-    public function getTeamFairPlayResultBySymbol(string $symbol) {
+    public function getTeamFairPlayResultBySymbol(string $symbol): string
+    {
         return $this->teamFairPlayResults[$symbol];
     }
 }
