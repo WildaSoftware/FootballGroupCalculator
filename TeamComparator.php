@@ -13,6 +13,7 @@ class TeamComparator {
         $conditionsForSmallTable = ['fairPlayResults'];
 
         $result = 0;
+        
         foreach($conditions as $condition) {
             $methodName = 'compare'.ucwords($condition);
             $result = $this->{$methodName}($team1, $team2);
